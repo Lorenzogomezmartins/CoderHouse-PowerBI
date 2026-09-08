@@ -1,30 +1,72 @@
-# Pipeline ETL - TechStore
+# Modelo de datos y medidas DAX - TechStore
 
-Este proyecto contiene un pipeline ETL desarrollado en Power BI utilizando Power Query y lenguaje M.
+Este proyecto contiene el modelo analítico de TechStore desarrollado en Power BI a partir del pipeline ETL realizado previamente con Power Query y lenguaje M.
 
 ## Objetivo
 
-Limpiar, transformar y preparar los datos de TechStore para utilizarlos posteriormente en un modelo analítico en Power BI.
+Construir un modelo de datos en esquema estrella, establecer relaciones activas entre las tablas y crear una tabla centralizada de medidas utilizando DAX para el análisis de ventas.
 
-## Transformaciones realizadas
+## Modelo de datos
 
-* Eliminación de registros duplicados utilizando las columnas de ID como clave.
-* Corrección de tipos de datos.
-* Renombrado de consultas con nomenclatura dimensional:
+El modelo está compuesto por las siguientes tablas:
 
-  * `Dim_Clientes`
-  * `Dim_Productos`
-  * `Dim_Categorias`
-  * `Fact_Ventas`
-* Merge entre `Fact_Ventas` y `Dim_Productos` para incorporar `nombre_producto` y `categoria`.
-* Documentación de transformaciones mediante comentarios técnicos en lenguaje M.
+- `Dim_Clientes`
+- `Dim_Productos`
+- `Dim_Categorias`
+- `Dim_Fechas`
+- `Fact_Ventas`
 
-## Tratamiento de nulos y duplicados
+Las relaciones establecidas son:
 
-En `Dim_Clientes` se eliminaron duplicados por `id_cliente`. Los valores nulos de `email` y `ciudad` se reemplazaron por `"Sin datos"` para conservar los registros de clientes y evitar pérdida innecesaria de información.
+- `Dim_Clientes[id_cliente]` → `Fact_Ventas[id_cliente]`
+- `Dim_Productos[id_producto]` → `Fact_Ventas[id_producto]`
+- `Dim_Categorias[id_categoria]` → `Dim_Productos[id_categoria]`
+- `Dim_Fechas[Date]` → `Fact_Ventas[fecha_venta]`
 
-En `Dim_Productos` se eliminaron duplicados por `id_producto`. Los registros con `precio` nulo se eliminaron porque el precio es necesario para calcular correctamente los ingresos. También se eliminaron los productos sin categoría para evitar clasificaciones incompletas en los análisis.
+Las relaciones utilizan cardinalidad 1:N, dirección de filtro única y se encuentran activas.
+
+## Tabla de fechas
+
+Se creó `Dim_Fechas` utilizando el rango de fechas disponible en `Fact_Ventas`.
+
+La tabla incluye las siguientes columnas calculadas:
+
+- `Date`
+- `Año`
+- `Mes Número`
+- `Mes Nombre`
+- `Trimestre`
+- `Semana`
+
+La columna `Date` se utiliza como columna de fecha principal para las relaciones y los cálculos de inteligencia temporal.
+
+## Medidas DAX
+
+Se creó una tabla dedicada `Medidas` para centralizar las medidas principales del modelo.
+
+Las medidas desarrolladas son:
+
+- `Total Ventas`
+- `Ventas Online`
+- `Ventas YTD`
+- `Ventas LY`
+- `% Crecimiento Anual`
+
+Estas medidas permiten analizar las ventas totales, las ventas realizadas por canal online, la acumulación anual, la comparación con el año anterior y el crecimiento porcentual interanual.
+
+## Validación
+
+Se creó la página `Validación` con una matriz que permite comprobar el funcionamiento de las medidas por:
+
+- Mes
+- Año
+- Total Ventas
+- Ventas YTD
+- Ventas LY
+- % Crecimiento Anual
+
+La validación permite comprobar la acumulación de ventas durante el año y la comparación de los períodos con el año anterior.
 
 ## Resultado
 
-El archivo `.pbix` contiene las tablas limpias y estructuradas para continuar con el modelado de datos y la creación de medidas y visualizaciones en Power BI.
+El archivo `.pbix` contiene el modelo de datos relacionado, la tabla de fechas, las medidas DAX y la página de validación necesarias para continuar con el análisis y la visualización de los datos de TechStore.
